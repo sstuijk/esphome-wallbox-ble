@@ -1,0 +1,80 @@
+esphome:
+  name: esphome-wallbox-gw
+  friendly_name: Wallbox Pulsar Plus
+
+esp32:
+  board: esp32-c6-devkitc-1
+  variant: ESP32C6
+  framework:
+    type: esp-idf
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: "2BQWUWNgqHN6no11NTcKXjtVfjM21gHSJzL7Zvt8VfA="
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+esp32_ble_tracker:
+
+ble_client:
+  - mac_address: !secret wallbox_ble_address
+    id: wallbox_client
+    auto_connect: true
+
+external_components:
+  - source:
+      type: local
+      path: custom_components
+    components: [ wallbox_ble ]
+    
+wallbox_ble:
+  id: wallbox
+  ble_client_id: wallbox_client
+  poll_interval: 10s
+
+binary_sensor:
+  - platform: wallbox_ble
+    wallbox_ble_id: wallbox
+    connected:
+      name: "Connected"
+    charging:
+      name: "Charging"
+
+sensor:
+  - platform: wallbox_ble
+    wallbox_ble_id: wallbox
+    status:
+      name: "Status Code"
+    charging_current:
+      name: "Charging Current"
+    max_charging_current:
+      name: "Maximum Current"
+    session_energy:
+      name: "Session Energy"
+
+text_sensor:
+  - platform: wallbox_ble
+    wallbox_ble_id: wallbox
+    status:
+      name: "Status"
+
+number:
+  - platform: wallbox_ble
+    wallbox_ble_id: wallbox
+    name: "Maximum Charging Current"
+
+switch:
+  - platform: wallbox_ble
+    wallbox_ble_id: wallbox
+    charging:
+      name: "Charging Control"
+    lock:
+      name: "Lock"
