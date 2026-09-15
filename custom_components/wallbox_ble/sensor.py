@@ -6,9 +6,11 @@ from esphome.const import (
     CONF_ID,
     DEVICE_CLASS_CURRENT,
     DEVICE_CLASS_ENERGY,
+    DEVICE_CLASS_POWER,
     STATE_CLASS_MEASUREMENT,
     UNIT_AMPERE,
     UNIT_KILOWATT_HOURS,
+    UNIT_KILOWATT,
 )
 
 from . import WallboxBLE
@@ -21,6 +23,7 @@ CONF_STATUS = "status"
 CONF_CHARGING_CURRENT = "charging_current"
 CONF_MAX_CHARGING_CURRENT = "max_charging_current"
 CONF_SESSION_ENERGY = "session_energy"
+CONF_CHARGING_POWER = "charging_power"
 
 
 CONFIG_SCHEMA = cv.Schema(
@@ -50,6 +53,13 @@ CONFIG_SCHEMA = cv.Schema(
             device_class=DEVICE_CLASS_ENERGY,
             state_class=STATE_CLASS_MEASUREMENT,
             accuracy_decimals=2,
+        ),
+
+        cv.Optional(CONF_CHARGING_POWER): sensor.sensor_schema(
+            unit_of_measurement=UNIT_KILOWATT,
+            device_class=DEVICE_CLASS_POWER,
+            state_class=STATE_CLASS_MEASUREMENT,
+            accuracy_decimals=3,
         ),
     }
 )
@@ -83,3 +93,9 @@ async def to_code(config):
             config[CONF_SESSION_ENERGY]
         )
         cg.add(parent.set_session_energy_sensor(sens))
+
+    if CONF_CHARGING_POWER in config:
+        sens = await sensor.new_sensor(
+            config[CONF_CHARGING_POWER]
+        )
+        cg.add(parent.set_charging_power_sensor(sens))

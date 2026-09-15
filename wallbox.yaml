@@ -14,7 +14,6 @@ logger:
 api:
   encryption:
     key: !secret esphome_wallbox_gw__encryption_key
-
 ota:
   - platform: esphome
 
@@ -59,12 +58,16 @@ sensor:
       name: "Maximum Current"
     session_energy:
       name: "Session Energy"
+    charging_power:
+      name: "Charging Power"
 
 text_sensor:
   - platform: wallbox_ble
     wallbox_ble_id: wallbox
     status:
       name: "Status"
+    firmware_version:
+      name: "Firmware Version"
 
 number:
   - platform: wallbox_ble

@@ -72,12 +72,18 @@ void WallboxBLE::loop()
         // immediately after r_dat has completed.
         this->send_realtime_status_request_();
         
-        // Extra info when charging
-        if (this->charging_binary_sensor_->get_state())
-        {
-          // Live session energy feed 
-          this->send_live_energy_feed_request_();
-        }
+        // Live session energy feed 
+        this->send_live_energy_feed_request_();
+    }
+    
+    // Diagnostic polling.
+    if (this->state_ == State::READY &&
+            !this->request_in_flight_ &&
+            now - this->last_diagnostic_poll_ >= this->diagnostic_poll_interval_) {
+
+        this->last_diagnostic_poll_ = now;
+    
+        this->send_firmware_version_request_();
     }
 }
 
@@ -574,6 +580,24 @@ void WallboxBLE::send_live_energy_feed_request_()
     );
 }
 
+// ============================================================================
+// Firmware version request
+// ============================================================================
+
+void WallboxBLE::send_firmware_version_request_()
+{
+
+    if (!this->connected_) {
+        return;
+    }
+
+    ESP_LOGD(TAG, "Requesting Wallbox firmware version");
+
+    this->request_(
+        "fw_v_",
+        "null"
+    );
+}
 
 // ============================================================================
 // Authentication
@@ -1036,6 +1060,12 @@ void WallboxBLE::process_json_(
         this->pending_method_.clear();
     }
 
+    if (cur_request == "fw_v_") {
+          ESP_LOGW(TAG, "--START PROCESS: %s", cur_request.c_str());
+          this->process_firmware_version_(json);
+          ESP_LOGW(TAG, "--END PROCESS: %s", cur_request.c_str());
+    }
+
 
     cJSON *result =
         cJSON_GetObjectItemCaseSensitive(
@@ -1063,7 +1093,7 @@ void WallboxBLE::process_json_(
                 this->process_live_energy_feed_(std::string(result_string));
                 ESP_LOGW(TAG, "--END PROCESS: %s", cur_request.c_str());
             }
-
+            
             cJSON_free(result_string);
         }
     }
@@ -1360,9 +1390,75 @@ void WallboxBLE::process_live_energy_feed_(
         }
     }
 
+    // --------------------------------------------------------------------------
+    // Charging power
+    // --------------------------------------------------------------------------
+
+    cJSON *power =
+        cJSON_GetObjectItemCaseSensitive(
+            root,
+            "charging_power"
+        );
+
+    if (cJSON_IsNumber(power)) {
+
+        int value = power->valueint;
+
+        ESP_LOGD(TAG, "Power: %f", value);
+
+        if (this->charging_power_sensor_ != nullptr) {
+            this->charging_power_sensor_->publish_state(
+                value
+            );
+        }
+    }
+
     cJSON_Delete(root);
 }
 
+// ============================================================================
+// Firmware version
+// ============================================================================
+
+void WallboxBLE::process_firmware_version_(
+    const std::string &json)
+{
+
+    cJSON *root =
+        cJSON_Parse(json.c_str());
+
+
+    if (root == nullptr) {
+
+        ESP_LOGW(TAG, "Could not parse Wallbox live session energy feed");
+
+        return;
+    }
+
+    /*
+      {"c":"CM3","cf":250,"db":111,"fw":871,"gm":-1,"id":26,"p":"prj08-pulsar-plus","r":871,"s":"6.7.43","sx":-1}
+    */
+
+    // --------------------------------------------------------------------------
+    // Software version
+    // --------------------------------------------------------------------------
+    cJSON *fw =
+        cJSON_GetObjectItemCaseSensitive(
+            root,
+            "s"
+        );
+    char *sw = fw->valuestring;
+    
+    ESP_LOGD(TAG, "FW: %s", sw);
+
+    if (this->firmware_version_text_sensor_ != nullptr) {
+        this->firmware_version_text_sensor_->publish_state(
+            sw
+        );
+    }
+
+    cJSON_Delete(root);
+}
 
 // ============================================================================
 // Set maximum charging current

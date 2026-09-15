@@ -3,7 +3,7 @@ import esphome.config_validation as cv
 
 from esphome.components import ble_client
 
-CODEOWNERS = ["@yourname"]
+CODEOWNERS = ["Sander Stuijk"]
 
 DEPENDENCIES = ["ble_client"]
 

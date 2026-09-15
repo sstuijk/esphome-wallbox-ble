@@ -84,6 +84,11 @@ public:
         this->session_energy_sensor_ = sensor;
     }
 
+    void set_charging_power_sensor(sensor::Sensor *sensor)
+    {
+        this->charging_power_sensor_ = sensor;
+    }
+
     void set_connected_binary_sensor(
         binary_sensor::BinarySensor *sensor)
     {
@@ -100,6 +105,12 @@ public:
         text_sensor::TextSensor *sensor)
     {
         this->status_text_sensor_ = sensor;
+    }
+
+    void set_firmware_version_text_sensor(
+        text_sensor::TextSensor *sensor)
+    {
+        this->firmware_version_text_sensor_ = sensor;
     }
 
     // ==========================================================================
@@ -166,6 +177,9 @@ protected:
     uint32_t poll_interval_{10000};
     uint32_t last_poll_{0};
 
+    uint32_t diagnostic_poll_interval_{60000};
+    uint32_t last_diagnostic_poll_{0};
+
     // ==========================================================================
     // Request handling
     // ==========================================================================
@@ -220,11 +234,15 @@ protected:
 
     sensor::Sensor *session_energy_sensor_{nullptr};
 
+    sensor::Sensor *charging_power_sensor_{nullptr};
+
     binary_sensor::BinarySensor *connected_binary_sensor_{nullptr};
 
     binary_sensor::BinarySensor *charging_binary_sensor_{nullptr};
 
     text_sensor::TextSensor *status_text_sensor_{nullptr};
+
+    text_sensor::TextSensor *firmware_version_text_sensor_{nullptr};
 
     number::Number *max_current_number_{nullptr};
 
@@ -256,6 +274,8 @@ protected:
     void send_realtime_status_request_();
 
     void send_live_energy_feed_request_();
+
+    void send_firmware_version_request_();
 
     void request_authentication_();
 
@@ -290,6 +310,9 @@ protected:
         const std::string &json);
 
     void process_live_energy_feed_(
+        const std::string &json);
+
+    void process_firmware_version_(
         const std::string &json);
 
     // ==========================================================================
