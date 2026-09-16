@@ -1379,7 +1379,7 @@ void WallboxBLE::process_live_energy_feed_(
 
     if (cJSON_IsNumber(energy)) {
 
-        int value =  energy->valueint;
+        double value =  energy->valuedouble;
 
         ESP_LOGD(TAG, "Energy: %f", value);
 
@@ -1402,7 +1402,7 @@ void WallboxBLE::process_live_energy_feed_(
 
     if (cJSON_IsNumber(power)) {
 
-        int value = power->valueint;
+        double value = power->valuedouble;
 
         ESP_LOGD(TAG, "Power: %f", value);
 

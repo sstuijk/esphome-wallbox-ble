@@ -2,6 +2,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 
 from esphome.components import text_sensor
+from esphome.const import ENTITY_CATEGORY_DIAGNOSTIC
 
 from . import WallboxBLE
 
@@ -19,7 +20,8 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Optional(CONF_STATUS): text_sensor.text_sensor_schema(),
         
         cv.Optional(CONF_FIRMWARE_VERSION): text_sensor.text_sensor_schema(
-            icon="mdi:memory"),
+            icon="mdi:memory",
+            entity_category=ENTITY_CATEGORY_DIAGNOSTIC),
     }
 )
 
