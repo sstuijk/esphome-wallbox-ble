@@ -5,7 +5,7 @@ from esphome.components import ble_client
 
 CODEOWNERS = ["Sander Stuijk"]
 
-DEPENDENCIES = ["ble_client"]
+DEPENDENCIES = ["ble_client", "json"]
 
 wallbox_ble_ns = cg.esphome_ns.namespace("wallbox_ble")
 
