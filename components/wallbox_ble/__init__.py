@@ -51,3 +51,5 @@ async def to_code(config):
             config[CONF_POLL_INTERVAL].total_milliseconds
         )
     )
+
+    cg.add_build_flag("-ljson")
